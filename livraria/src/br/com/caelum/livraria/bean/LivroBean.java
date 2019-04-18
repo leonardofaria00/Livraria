@@ -24,6 +24,8 @@ public class LivroBean implements Serializable {
 
 	private Integer autorId;
 
+	private List<Livro> livros;
+
 	public void setAutorId(Integer autorId) {
 		this.autorId = autorId;
 	}
@@ -37,7 +39,14 @@ public class LivroBean implements Serializable {
 	}
 
 	public List<Livro> getLivros() {
-		return new DAO<Livro>(Livro.class).listaTodos();
+		
+		DAO<Livro> dao = new DAO<Livro>(Livro.class);
+		
+		if(this.livros == null) {
+			this.livros = dao.listaTodos();			
+		}
+		
+		return livros;
 	}
 
 	public List<Autor> getAutores() {
@@ -48,6 +57,10 @@ public class LivroBean implements Serializable {
 		return this.livro.getAutores();
 	}
 
+	public void carregarLivroPelaId() {
+		this.livro = new DAO<Livro>(Livro.class).buscaPorId(this.livro.getId()); 
+	}
+	
 	public void gravarAutor() {
 		Autor autor = new DAO<Autor>(Autor.class).buscaPorId(this.autorId);
 		this.livro.adicionaAutor(autor);
@@ -63,11 +76,32 @@ public class LivroBean implements Serializable {
 			return;
 		}
 
-		new DAO<Livro>(Livro.class).adiciona(this.livro);
+		DAO<Livro> dao = new DAO<Livro>(Livro.class);
+		
+		if(this.livro.getId() == null) {
+			dao.adiciona(this.livro);
+			this.livros = dao.listaTodos();
+		} else {
+			dao.atualiza(this.livro);
+		}
 
 		this.livro = new Livro();
 	}
 
+	public void remover(Livro livro) {
+		System.out.println("Removendo livro");
+		new DAO<Livro>(Livro.class).remove(livro);
+	}
+	
+	public void removerAutorDoLivro(Autor autor) {
+		this.livro.removeAutor(autor);
+	}
+	
+	public void carregar(Livro livro) {
+		System.out.println("Carregando livro");
+		this.livro = livro;
+	}
+	
 	public String formAutor() {
 		System.out.println("Chamanda do formulário do Autor.");
 		return "autor?faces-redirect=true";
